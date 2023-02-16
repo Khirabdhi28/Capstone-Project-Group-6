@@ -1,0 +1,16 @@
+SELECT Vendor, MPN, Title, Price, UPC, Supplier, PacificNorthWestQuantity,EastQuantity,GreatLakesQuantity,MAPprice,NewJerseyQty,FloridaQty,MFGQty
+FROM     (SELECT Vendor, [Metafield: mm-google-shopping#mpn (string)] AS MPN, Title, [Variant Cost] AS Price, [Variant Barcode] AS UPC, 'WerRv' AS Supplier, '' AS PacificNorthWestQuantity,'' AS EastQuantity,'' AS GreatLakesQuantity,'' AS MAPprice,'' AS NewJerseyQty,'' AS FloridaQty,'' AS MFGQty
+                  FROM      dbo.Products
+                  UNION
+                  SELECT mp.MFG AS Vendor, mp.[MFG Item Number] AS MPN, mp.Description AS Title, mp.[Your Price] AS Price, CASE WHEN ISNUMERIC(UPC) = 1 THEN CAST(UPC AS float) ELSE 0 END AS UPC, 'Meyer' AS Supplier,'' AS PacificNorthWestQuantity,'' AS EastQuantity,'' AS GreatLakesQuantity, mp.[MAP] AS MAPprice,'' AS NewJerseyQty,'' AS FloridaQty,mi.[MFG Qty Available] AS MFGQty
+                  FROM     dbo.Meyer_Pricing AS mp INNER JOIN
+                                    dbo.Meyer_Inventory AS mi ON mp.MFG = mi.MFGName AND mp.[MFG Item Number] = mi.[MFG Item Number]
+                  UNION
+                  SELECT [Manufacturer Name] AS Vendor, [Manufacturer Part Number] AS MPN, [Uppercase Title] AS Title, [Your Cost] AS Price, CASE WHEN ISNUMERIC([UPC Code]) = 1 THEN CAST([UPC Code] AS float) ELSE 0 END AS UPC, 
+                                    'CWR' AS Supplier,'' AS PacificNorthWestQuantity,'' AS EastQuantity,'' AS GreatLakesQuantity,[M A P  Price] AS MAPprice,[Case Qty (NJ)] AS NewJerseyQty,[Case Qty (FL)] AS FloridaQty,'' AS MFGQty
+                  FROM     dbo.CWR_Inventory
+                  UNION
+                  SELECT VendorName AS Vendor, ManufacturerPartNo AS MPN, LongDescription AS Title, Cost AS Price, UPCCode AS UPC, 'Keystone' AS Supplier,PacificNWQty AS PacificNorthWestQuantity,EastQty AS EastQuantity,GreatLakesQty AS GreatLakesQuantity,'' AS MAPprice,'' AS NewJerseyQty,'' AS FloridaQty,'' AS MFGQty
+                  FROM     dbo.Keystone_Inventory) AS Alldata_1
+WHERE  (UPC <> 0) OR
+                  (UPC IS NOT NULL)
